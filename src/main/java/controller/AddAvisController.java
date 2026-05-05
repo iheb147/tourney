@@ -1,3 +1,4 @@
+```unknown
 package controller;
 import entities.AvisJoueur;
 import entities.User;
@@ -141,8 +142,13 @@ public class AddAvisController implements Initializable {
 
                 Integer selectedKey = getKeyByValue(items, idplayer.getValue());
 
-
-
+                if (selectedKey == null) {
+                    Alert alert = new Alert(Alert.AlertType.ERROR);
+                    alert.setTitle("Selection Error");
+                    alert.setContentText("Selected player not found. Please try again.");
+                    alert.show();
+                    return;
+                }
 
                     // Set the user ID and save the avisJoueur
                     user.setId(selectedKey.intValue());
@@ -174,13 +180,23 @@ public class AddAvisController implements Initializable {
     Map<Integer,String> setUpComboBox() {
         Map<Integer,String> items = new HashMap<Integer,String>();
 
+        MyDB db = MyDB.getInstance();
+        if (db == null) {
+            System.err.println("MyDB instance is null");
+            return items;
+        }
 
         try {
-            String sql = "SELECT id,name FROM user";
-            Statement stmt = MyDB.getInsatnce().getConnection().createStatement();
+            java.sql.Connection conn = db.getConnection();
+            if (conn == null) {
+                System.err.println("Database connection is null");
+                return items;
+            }
+            String sql = "SELECT id, name FROM user";
+            Statement stmt = conn.createStatement();
             ResultSet rs = stmt.executeQuery(sql);
             while (rs.next()) {
-                items.put(rs.getInt("id"),rs.getString("name"));
+                items.put(rs.getInt("id"), rs.getString("name"));
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -188,18 +204,3 @@ public class AddAvisController implements Initializable {
         System.out.println(items);
         return items;
     }
-
-    private <K, V> K getKeyByValue(Map<K, V> map, V value) {
-        for (Map.Entry<K, V> entry : map.entrySet()) {
-            if (value.equals(entry.getValue())) {
-                return entry.getKey();
-            }
-        }
-        return null;
-    }
-
-
-
-
-
-}
