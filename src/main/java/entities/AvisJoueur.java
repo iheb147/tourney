@@ -1,14 +1,13 @@
 package entities;
 
 import java.time.LocalDate;
-import java.util.Date;
 import java.util.Objects;
+
 public class AvisJoueur {
     private int idAvis;
     private User user;
     private String commentaire;
     private LocalDate dateAvis;
-
     private float note;
 
     public AvisJoueur() {
@@ -65,4 +64,5 @@ public class AvisJoueur {
     @Override
     public String toString() {
         return "AvisJoueur{" + "idAvis=" + idAvis + ", user=" + user + ", commentaire=" + commentaire + ", dateAvis=" + dateAvis + ", note=" + note + '}';
-    }}
+    }
+}
