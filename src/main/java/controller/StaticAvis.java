@@ -1,3 +1,4 @@
+```unknown
 package controller;
 
 import esprit.project.tools.MyDB;
@@ -45,7 +46,7 @@ public class StaticAvis implements Initializable {
         int numberOfUsers = 0;
 
         String sql = "SELECT COUNT(*) FROM USER";
-        try (PreparedStatement preparedStatement = MyDB.getInsatnce().getConnection().prepareStatement(sql);
+        try (PreparedStatement preparedStatement = MyDB.getInstance().getConnection().prepareStatement(sql);
              ResultSet resultSet = preparedStatement.executeQuery()) {
 
             if (resultSet.next()) {
@@ -64,7 +65,7 @@ public class StaticAvis implements Initializable {
         int numberOfUsers = 0;
 
         String sql = "SELECT COUNT(*) FROM USER WHERE id_equipe IS NOT NULL ";
-        try (PreparedStatement preparedStatement = MyDB.getInsatnce().getConnection().prepareStatement(sql);
+        try (PreparedStatement preparedStatement = MyDB.getInstance().getConnection().prepareStatement(sql);
              ResultSet resultSet = preparedStatement.executeQuery()) {
 
             if (resultSet.next()) {
@@ -82,7 +83,7 @@ public class StaticAvis implements Initializable {
         int numberOfUsers = 0;
 
         String sql = "SELECT COUNT(*) FROM equipe";
-        try (PreparedStatement preparedStatement = MyDB.getInsatnce().getConnection().prepareStatement(sql);
+        try (PreparedStatement preparedStatement = MyDB.getInstance().getConnection().prepareStatement(sql);
              ResultSet resultSet = preparedStatement.executeQuery()) {
 
             if (resultSet.next()) {
@@ -106,7 +107,7 @@ public class StaticAvis implements Initializable {
                 "FROM avisjoueur avis " +
                 "JOIN user ON avis.idjoueur = user.id " +
                 "GROUP BY avis.idjoueur, user.name";
-        try (PreparedStatement preparedStatement = MyDB.getInsatnce().getConnection().prepareStatement(sql);
+        try (PreparedStatement preparedStatement = MyDB.getInstance().getConnection().prepareStatement(sql);
              ResultSet resultSet = preparedStatement.executeQuery()) {
 
             while (resultSet.next()) {
@@ -135,7 +136,7 @@ public class StaticAvis implements Initializable {
                 "FROM avisjoueur avis " +
                 "JOIN user ON avis.idjoueur = user.id " +
                 "GROUP BY avis.idjoueur, user.name";
-        try (PreparedStatement preparedStatement = MyDB.getInsatnce().getConnection().prepareStatement(sql);
+        try (PreparedStatement preparedStatement = MyDB.getInstance().getConnection().prepareStatement(sql);
              ResultSet resultSet = preparedStatement.executeQuery()) {
 
             while (resultSet.next()) {
@@ -187,26 +188,4 @@ public class StaticAvis implements Initializable {
 
         NbrUser.setText(String.valueOf(fetchData()));
         NbrUser2.setText(String.valueOf(fetchDataJoueur()));
-        NbrUser1.setText(String.valueOf(fetchDataEquipe()));
-
-
-
-
-
-
-
-    }
-    private void navigateToAvisTable() {
-        FXMLLoader loader = new FXMLLoader(getClass().getResource("/ShowAvisPLayer.fxml"));
-        try {
-            Parent root = loader.load();
-            Stage stage = new Stage(); // Assuming a new stage for avis table
-            stage.setScene(new Scene(root));
-            stage.setTitle("Avis Table");
-            stage.show();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-}
+        NbrUser1.setText(String.valueOf(fetchData
