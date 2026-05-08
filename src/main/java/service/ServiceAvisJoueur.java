@@ -1,3 +1,4 @@
+```java
 package service;
 
 import entities.AvisJoueur;
@@ -17,7 +18,7 @@ public class ServiceAvisJoueur implements IServiceAvisJoueur<AvisJoueur> {
     PreparedStatement preparedStatement;
 
     public ServiceAvisJoueur() {
-        connection = esprit.project.tools.MyDB.getInsatnce().getConnection();
+        connection = esprit.project.tools.MyDB.getInstance().getConnection();
 
     }
 
@@ -94,36 +95,4 @@ public class ServiceAvisJoueur implements IServiceAvisJoueur<AvisJoueur> {
         List<AvisJoueur> avisList = new ArrayList<>();
         String req = "SELECT AvisJoueur.*, User.name FROM AvisJoueur JOIN User ON AvisJoueur.idJoueur = User.id";
         try (Statement statement = connection.createStatement();
-             ResultSet resultSet = statement.executeQuery(req)) {
-
-            while (resultSet.next()) {
-                int idAvis = resultSet.getInt("idAvis");
-                String commentaire = resultSet.getString("commentaire");
-                float note = resultSet.getFloat("note");
-                int idJoueur = resultSet.getInt("idJoueur");
-                String nomJoueur = resultSet.getString("name");
-                LocalDate dateAvis = resultSet.getObject("dateAvis", LocalDate.class); // Change here
-
-                AvisJoueur avis = new AvisJoueur();
-                avis.setIdAvis(idAvis);
-                avis.setCommentaire(commentaire);
-                avis.setNote(note);
-                avis.setDateAvis(dateAvis); // Change here
-
-                User user = new User();
-                user.setId(idJoueur);
-                user.setName(nomJoueur);
-                avis.setUser(user);
-
-                avisList.add(avis);
-            }
-        }
-        return avisList;
-    }
-
-
-
-
-
-
-}
+             ResultSet resultSet =
