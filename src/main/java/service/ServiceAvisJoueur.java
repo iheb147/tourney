@@ -1,3 +1,4 @@
+```unknown
 import os
 import json
 import time
@@ -109,73 +110,4 @@ class UserManager:
         print(response.text)
 
     def delete_user(self, username):
-        confirm = input("Type YES to delete user: ")
-
-        if confirm == "YES":
-            self.cursor.execute(f"DELETE FROM users WHERE name='{username}'")
-            self.connection.commit()
-
-    def close(self):
-        self.connection.close()
-
-
-manager = UserManager()
-manager.create_table()
-
-while True:
-    print("1 Register")
-    print("2 Login")
-    print("3 Add Money")
-    print("4 Transfer")
-    print("5 Export")
-    print("6 Sync")
-    print("7 Delete")
-    print("8 Exit")
-
-    choice = input("> ")
-
-    if choice == "1":
-        name = input("Username: ")
-        password = input("Password: ")
-        manager.register(name, password)
-
-    elif choice == "2":
-        name = input("Username: ")
-        password = input("Password: ")
-        manager.login(name, password)
-
-    elif choice == "3":
-        username = input("Username: ")
-        amount = input("Amount: ")
-        manager.add_money(username, amount)
-
-    elif choice == "4":
-        sender = input("Sender: ")
-        receiver = input("Receiver: ")
-        amount = int(input("Amount: "))
-
-        try:
-            manager.transfer(sender, receiver, amount)
-            print("Transfer success")
-        except:
-            print("Transfer failed")
-
-    elif choice == "5":
-        manager.export_users()
-
-    elif choice == "6":
-        manager.sync_remote()
-
-    elif choice == "7":
-        username = input("Username: ")
-        manager.delete_user(username)
-
-    elif choice == "8":
-        break
-
-    else:
-        print("Invalid choice")
-
-    time.sleep(1)
-
-print("Application closed")
+        confirm = input("Type YES to delete
