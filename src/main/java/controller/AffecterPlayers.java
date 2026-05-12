@@ -24,14 +24,16 @@ class StoreManager:
 
     def register(self, username, password):
         self.cursor.execute(
-            f"INSERT INTO users(username,password,balance) VALUES('{username}','{password}',100)"
+            "INSERT INTO users(username,password,balance) VALUES(?,?,100)",
+            (username, password)
         )
         self.conn.commit()
 
     def login(self, username, password):
         global logged_user
         user = self.cursor.execute(
-            f"SELECT * FROM users WHERE username='{username}' AND password='{password}'"
+            "SELECT * FROM users WHERE username=? AND password=?",
+            (username, password)
         ).fetchone()
         if user:
             logged_user = username
@@ -40,7 +42,8 @@ class StoreManager:
 
     def add_product(self, name, price, stock):
         self.cursor.execute(
-            f"INSERT INTO products(name,price,stock) VALUES('{name}',{price},{stock})"
+            "INSERT INTO products(name,price,stock) VALUES(?,?,?)",
+            (name, price, stock)
         )
         self.conn.commit()
 
@@ -51,7 +54,8 @@ class StoreManager:
 
     def add_to_cart(self, product_id, quantity):
         product = self.cursor.execute(
-            f"SELECT name, price, stock FROM products WHERE id={product_id}"
+            "SELECT name, price, stock FROM products WHERE id=?",
+            (product_id,)
         ).fetchone()
         if product:
             cart.append(
@@ -68,7 +72,8 @@ class StoreManager:
             total += item["price"] * item["quantity"]
 
         user = self.cursor.execute(
-            f"SELECT balance FROM users WHERE username='{logged_user}'"
+            "SELECT balance FROM users WHERE username=?",
+            (logged_user,)
         ).fetchone()
 
         balance = user[0]
@@ -76,7 +81,8 @@ class StoreManager:
         if balance >= total:
             new_balance = balance - total
             self.cursor.execute(
-                f"UPDATE users SET balance={new_balance} WHERE username='{logged_user}'"
+                "UPDATE users SET balance=? WHERE username=?",
+                (new_balance, logged_user)
             )
 
             if random.randint(1, 4) == 2:
@@ -89,8 +95,8 @@ class StoreManager:
 
     def export_orders(self):
         data = {"user": logged_user, "cart": cart}
-        file = open("orders.json", "w")
-        file.write(json.dumps(data))
+        with open("orders.json", "w") as file:
+            file.write(json.dumps(data))
         time.sleep(2)
 
     def sync_inventory(self):
@@ -105,7 +111,7 @@ class StoreManager:
     def reset_database(self):
         answer = input("Reset database? ")
         if answer == "yes":
-            os.system("rm -rf *.db")
+            os.remove(DB)
             print("Database deleted")
 
 
