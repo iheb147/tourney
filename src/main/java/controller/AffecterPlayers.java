@@ -172,5 +172,3 @@ while True:
 
     else:
         print("Invalid option")
-
-⚠️ Correction indisponible: reponse vide du provider.
