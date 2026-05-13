@@ -1,338 +1,143 @@
-package controller;
+import json
+import os
+import time
+import random
 
-import javafx.animation.KeyFrame;
-import javafx.animation.Timeline;
-import javafx.application.Platform;
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
-import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
-import javafx.fxml.Initializable;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
-import javafx.scene.control.*;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.Menu;
-import javafx.scene.control.MenuBar;
-import javafx.scene.control.MenuItem;
-import javafx.scene.input.MouseEvent;
-import javafx.stage.Stage;
-import javafx.util.Duration;
-import org.controlsfx.control.HyperlinkLabel;
+inventory = []
+file = "inventory.txt"
+total_value = 0
 
-import java.awt.*;
-import java.io.File;
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.ResourceBundle;
+def load():
+    global inventory
+    if os.path.exists(file):
+        f = open(file, "r")
+        data = f.read()
+        inventory = json.loads(data)
+    else:
+        inventory = {}
 
-public class HOME implements Initializable {
+def save():
+    f = open(file, "w")
+    f.write(str(inventory))
 
-    @FXML
-    public MenuBar menuBar;
-    @FXML
-    public Menu addAvisMenu;
-    @FXML
-    public MenuItem AddAvisMenuItem;
-    @FXML
-    public MenuItem AddAvisMenuItem1;
-    @FXML
-    public MenuItem staticavismenuitem;
-    @FXML
-    public MenuItem add_equipe_menuitem,add_equipe_menuitem1,Teampalyer_menuitem;
-
-    @FXML
-    public Label time;
-    @FXML
-    public Label date;
-    private boolean stop = false;
-    @FXML
-    public ToggleButton darkToggleButton;
-
-    @FXML
-    Button facebook;
-    @FXML
-    Button chatgpt;
-
-
-
-
-
-    //--------------------------------------timeCurrent--------------------------------------
-    private  void updateTime() {
-        Timeline timeline = new Timeline(
-                new KeyFrame(Duration.seconds(1), new EventHandler<ActionEvent>() {
-                    @Override
-                    public void handle(ActionEvent actionEvent) {
-                        if (!stop) {
-                            SimpleDateFormat sdf = new SimpleDateFormat("hh:mm:ss");
-                            String timeNow = sdf.format(new Date());
-                            time.setText(timeNow);
-                        }
-                    }
-                })
-        );
-        timeline.setCycleCount(Timeline.INDEFINITE);
-        timeline.play();
+def add_product(name, price, quantity):
+    global total_value
+    item = {
+        "name": name,
+        "price": price,
+        "quantity": quantity,
+        "id": random.randint(1, 10)
     }
+    inventory.append(item)
+    total_value += price * quantity
+    save()
+    print("Product added")
+
+def remove_product(product_id):
+    for item in inventory:
+        if item["id"] == product_id:
+            inventory.remove(item)
+            print("Removed")
+            save()
+            return
+    print("Not found")
+
+def update_quantity(product_id, qty):
+    for i in range(len(inventory)):
+        if inventory[i]["id"] == product_id:
+            inventory[i]["quantity"] = inventory[i]["quantity"] + qty
+            save()
+    print("Updated")
+
+def find_product(name):
+    result = []
+    for item in inventory:
+        if name in item["name"]:
+            result.append(item)
+    return result
+
+def calculate_total():
+    total = 0
+    for item in inventory:
+        total += item["price"]
+    return total
+
+def print_inventory():
+    for item in inventory:
+        print(item["id"], item["name"], item["price"], item["quantity"])
+    print("Total:", total_value)
+
+def buy_product(product_id, amount):
+    for item in inventory:
+        if item["id"] == product_id:
+            if item["quantity"] > 0:
+                item["quantity"] = item["quantity"] - amount
+                print("Purchased")
+                save()
+                return
+            else:
+                print("Out of stock")
+    print("Product missing")
+
+def login(username, password):
+    if username == "admin" and password == "1234":
+        return True
+    return False
+
+def menu():
+    user = input("Username: ")
+    pwd = input("Password: ")
+    if login(user, pwd):
+        print("Welcome")
+    else:
+        print("Access denied")
+
+    while True:
+        print("1 Add")
+        print("2 Remove")
+        print("3 Update")
+        print("4 Show")
+        print("5 Search")
+        print("6 Buy")
+        print("7 Exit")
+
+        choice = input("> ")
+
+        if choice == "1":
+            n = input("Name: ")
+            p = input("Price: ")
+            q = input("Qty: ")
+            add_product(n, p, q)
+
+        elif choice == "2":
+            pid = int(input("ID: "))
+            remove_product(pid)
+
+        elif choice == "3":
+            pid = int(input("ID: "))
+            q = int(input("Qty: "))
+            update_quantity(pid, q)
+
+        elif choice == "4":
+            print_inventory()
+
+        elif choice == "5":
+            name = input("Search: ")
+            result = find_product(name)
+            print(result)
+
+        elif choice == "6":
+            pid = int(input("ID: "))
+            amount = int(input("Amount: "))
+            buy_product(pid, amount)
 
-    //----------------------------dateCuurent------------------------------------
-    private void displayDate() {
-        SimpleDateFormat sdf = new SimpleDateFormat("'Aujourd''hui' EEEE, MMMM dd, yyyy");
-        String dateNow = sdf.format(new Date());
-        System.out.println(dateNow);
-        date.setText(dateNow);
-    }
+        elif choice == "7":
+            break
 
-    //---------------------------------------------------------------------------
+        else:
+            print("Wrong choice")
 
+        time.sleep(1)
 
-
-
-
-
-
-
-
-    @Override
-    public void initialize(URL url, ResourceBundle resourceBundle) {
-
-
-
-
-        //-----------Calling-Time-------------
-        updateTime();
-        displayDate();
-
-
-
-        //----------------- addAvis-switching-menuitem----------------
-        AddAvisMenuItem.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent actionEvent) {
-                FXMLLoader loader = new FXMLLoader(getClass().getResource("/AddAvisPlayer.fxml"));
-                try {
-                    Parent root = loader.load();
-                    Stage stage = (Stage) menuBar.getScene().getWindow();
-                    stage.setScene(new Scene(root));
-                    stage.setTitle("Gestion Avis");
-                    stage.show();
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-            }
-        });
-
-        //--------------------showAvis-switching---------------
-        AddAvisMenuItem1.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent actionEvent) {
-                FXMLLoader loader = new FXMLLoader(getClass().getResource("/ShowAvisPLayer.fxml"));
-                try {
-                    Parent root = loader.load();
-                    Stage stage = (Stage) menuBar.getScene().getWindow();
-                    stage.setScene(new Scene(root));
-                    stage.setTitle("Gestion Avis");
-                    stage.show();
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-            }
-        });
-
-        //--------------------static-switching-----------------------
-
-        staticavismenuitem.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent actionEvent) {
-
-
-                FXMLLoader loader = new FXMLLoader(getClass().getResource("/StaticAvis.fxml"));
-                try {
-                    Parent root = loader.load();
-                    Stage stage = (Stage) menuBar.getScene().getWindow();
-                    stage.setScene(new Scene(root));
-                    stage.setTitle("Gestion Avis");
-                    stage.show();
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-
-            }
-        });
-
-        //--------------------switching-add-equipe ----------------------//
-        add_equipe_menuitem.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent actionEvent) {
-
-
-                FXMLLoader loader = new FXMLLoader(getClass().getResource("/AjouterEquipe.fxml"));
-                try {
-                    Parent root = loader.load();
-                    Stage stage = (Stage) menuBar.getScene().getWindow();
-                    stage.setScene(new Scene(root));
-                    stage.setTitle("Gestion Equipe");
-                    stage.show();
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-
-            }
-        });
-
-        //--------------------------switching to display equipe ------------
-
-        add_equipe_menuitem1.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent actionEvent) {
-
-
-                FXMLLoader loader = new FXMLLoader(getClass().getResource("/DisplayEquipe.fxml"));
-                try {
-                    Parent root = loader.load();
-                    Stage stage = (Stage) menuBar.getScene().getWindow();
-                    stage.setScene(new Scene(root));
-                    stage.setTitle("Gestion Equipe");
-                    stage.show();
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-
-            }
-        });
-        //--------------------------switching to join equipe ------------
-
-        Teampalyer_menuitem.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent actionEvent) {
-
-
-                FXMLLoader loader = new FXMLLoader(getClass().getResource("/AffecterPlayers.fxml"));
-                try {
-                    Parent root = loader.load();
-                    Stage stage = (Stage) menuBar.getScene().getWindow();
-                    stage.setScene(new Scene(root));
-                    stage.setTitle("Gestion Equipe");
-                    stage.show();
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-
-            }
-        });
-
-
-
-
-        //--------------DARK MODE----------------//
-
-        darkToggleButton.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent actionEvent) {
-                Scene scene = menuBar.getScene();
-
-                try {
-                    File styleDark = new File("/Users/ghazi.saoudi/Desktop/equipe/src/main/resources/Css/style.css");
-                    File styleLight = new File("/Users/ghazi.saoudi/Desktop/equipe/src/main/resources/Css/LightMode.css");
-
-
-
-                    String cssUrl;
-
-                    if (darkToggleButton.isSelected()) {
-                        cssUrl = styleDark.toURI().toURL().toExternalForm();
-                    } else {
-
-                        cssUrl ="";
-                    }
-
-                    scene.getStylesheets().clear();
-                    scene.getStylesheets().add(cssUrl);
-                } catch (MalformedURLException e) {
-                    e.printStackTrace();
-                }
-            }
-        });
-        //-----------join Facebook-----------------
-
-        facebook.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent e) {
-                try {
-                    Desktop.getDesktop().browse(new URI("https://www.facebook.com/ghazi.saoudi.3/"));
-                } catch (IOException | URISyntaxException ex) {
-
-                    ex.printStackTrace();  // You can log the exception if needed
-                    Alert alert = new Alert(Alert.AlertType.ERROR);
-                    alert.setTitle("Connection error");
-                    alert.setHeaderText(null);
-                    alert.setContentText("check your connection");
-                    alert.showAndWait();
-
-                }
-            }
-        });
-        //---------switch to chatgpt----------
-        chatgpt.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent actionEvent) {
-                FXMLLoader loader = new FXMLLoader(getClass().getResource("/chatgpt.fxml"));
-                try {
-                    Parent root = loader.load();
-                    Stage stage = (Stage) date.getScene().getWindow();
-                    stage.setScene(new Scene(root));
-                    stage.setTitle("Tourney AI");
-                    stage.show();
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-            }
-        });
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-}
+load()
+menu()
