@@ -14,11 +14,11 @@ def load():
         data = f.read()
         inventory = json.loads(data)
     else:
-        inventory = {}
+        inventory = []
 
 def save():
     f = open(file, "w")
-    f.write(str(inventory))
+    f.write(json.dumps(inventory))
 
 def add_product(name, price, quantity):
     global total_value
