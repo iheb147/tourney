@@ -14,11 +14,11 @@ def load():
         data = f.read()
         inventory = json.loads(data)
     else:
-        inventory = {}
+        inventory = []
 
 def save():
     f = open(file, "w")
-    f.write(str(inventory))
+    f.write(json.dumps(inventory))
 
 def add_product(name, price, quantity):
     global total_value
@@ -105,8 +105,8 @@ def menu():
 
         if choice == "1":
             n = input("Name: ")
-            p = input("Price: ")
-            q = input("Qty: ")
+            p = float(input("Price: "))
+            q = int(input("Qty: "))
             add_product(n, p, q)
 
         elif choice == "2":
