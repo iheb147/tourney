@@ -1,3 +1,4 @@
+```unknown
 package controller;
 
 import entities.Equipe;
@@ -169,7 +170,7 @@ public class AjouterEquipe implements Initializable {
 
                 //-------------testing captcha --------------
                      captchaInput.setAlignment(Pos.CENTER);
-                
+
                 if (!captchaInput.getText().equals(captcha)) {
                     Alert alert = new Alert(Alert.AlertType.ERROR);
                     alert.setTitle("Captcha");
@@ -191,44 +192,4 @@ public class AjouterEquipe implements Initializable {
                     alert.setTitle("Success");
                     alert.setContentText("Good job");
                     alert.show();
-                } catch (SQLException e) {
-                    throw new RuntimeException(e);
-                }
-            }
-        });
-
-        //----------------switching-to-Home------------
-        home.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent actionEvent) {
-                FXMLLoader loader = new FXMLLoader(getClass().getResource("/HOME.fxml"));
-                try {
-                    Parent root = loader.load();
-                    Stage stage = (Stage) date.getScene().getWindow();
-                    stage.setScene(new Scene(root));
-                    stage.setTitle("HOME");
-                    stage.show();
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-            }
-        });
-        //----------------switching-to-display equipe------------
-        EquipeDisplay.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent actionEvent) {
-                FXMLLoader loader = new FXMLLoader(getClass().getResource("/DisplayEquipe.fxml"));
-                try {
-                    Parent root = loader.load();
-                    Stage stage = (Stage) date.getScene().getWindow();
-                    stage.setScene(new Scene(root));
-                    stage.setTitle("HOME");
-                    stage.show();
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-            }
-        });
-
-    }
-}
+                } catch (SQLException
