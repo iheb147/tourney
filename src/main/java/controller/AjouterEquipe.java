@@ -5,14 +5,13 @@ function TodoApp() {
   const [text, setText] = useState("");
 
   const addTodo = () => {
-    todos.push(text);
-    setTodos(todos);
+    setTodos([...todos, text]);
     setText("");
   };
 
   const removeTodo = (index) => {
-    todos.splice(index, 1);
-    setTodos(todos);
+    const newTodos = todos.filter((_, i) => i !== index);
+    setTodos(newTodos);
   };
 
   return (
@@ -25,7 +24,7 @@ function TodoApp() {
       <button onClick={addTodo}>Add</button>
 
       {todos.map((todo, index) => (
-        <div key={Math.random()}>
+        <div key={index}>
           {todo}
           <button onClick={() => removeTodo(index)}>
             Delete
