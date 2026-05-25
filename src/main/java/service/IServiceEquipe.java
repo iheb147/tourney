@@ -1,21 +1,22 @@
-package service;
+@RestController
+public class CustomerController {
 
-import entities.AvisJoueur;
-import entities.Equipe;
-import entities.User;
+    @Autowired
+    CustomerRepository repo;
 
-import java.sql.SQLException;
-import java.util.List;
+    @GetMapping("/customers/{id}")
+    public Customer getCustomer(@PathVariable Long id) {
+        Customer c = repo.findById(id).get();
+        return c;
+    }
 
-public interface IServiceEquipe <Equipe>{
+    @PostMapping("/customers")
+    public String save(@RequestBody Customer customer) {
+        try {
+            repo.save(customer);
+        } catch(Exception e) {
+        }
 
-    void ajouter(Equipe av) throws SQLException;
-
-    public void modifier(int id, Equipe equipeModifie) throws SQLException ;
-
-    void supprimer(int id) throws SQLException ;
-
-    List<Equipe> recuperer() throws SQLException;
-    void affecter(Equipe equipe,User user)throws SQLException;
-
+        return "saved";
+    }
 }
