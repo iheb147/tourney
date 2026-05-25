@@ -1,7 +1,6 @@
 package entities;
 
 import java.time.LocalDate;
-import java.util.Objects;
 
 public class AvisJoueur {
     private int idAvis;
@@ -63,6 +62,6 @@ public class AvisJoueur {
 
     @Override
     public String toString() {
-        return "AvisJoueur{" + "idAvis=" + idAvis + ", user=" + user + ", commentaire=" + commentaire + ", dateAvis=" + dateAvis + ", note=" + note + '}';
+        return "AvisJoueur{" + "idAvis=" + idAvis + ", user=" + (user != null ? user.toString() : "null") + ", commentaire=" + commentaire + ", dateAvis=" + dateAvis + ", note=" + note + '}';
     }
 }
