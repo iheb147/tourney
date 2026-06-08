@@ -1,4 +1,3 @@
-```unknown
 package controller;
 
 import entities.Equipe;
@@ -25,7 +24,6 @@ import java.io.IOException;
 import java.net.URL;
 import java.sql.SQLException;
 import java.time.LocalDate;
-import java.util.Date;
 import java.util.Optional;
 import java.util.ResourceBundle;
 import static controller.DisplayEquipe.*;
@@ -36,7 +34,7 @@ public class UpdateEquipe implements Initializable {
     @FXML
     ImageView image;
     @FXML
-    Button upload,update,delete,home,JoinTeam;
+    Button upload, update, delete, home, JoinTeam;
     @FXML
     TextField Nomequipe;
     @FXML
@@ -44,35 +42,29 @@ public class UpdateEquipe implements Initializable {
     @FXML
     VBox myBox;
 
-
     Date Selcdate = DisplayEquipe.selectedDate;
     String SelcNom = DisplayEquipe.selectedNom;
     String Selcimage = DisplayEquipe.selectedImage;
-
     int Selcid = DisplayEquipe.selectedId;
-
 
     ServiceEquipe serviceEquipe = new ServiceEquipe();
 
-
     private String imagePath;
+
     private void chooseImage() {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Choisir une image");
         File selectedFile = fileChooser.showOpenDialog(null);
 
         if (selectedFile != null) {
-            imagePath = selectedFile.getAbsolutePath(); // Save the image path
+            imagePath = selectedFile.getAbsolutePath();
             Image selectedImage = new Image(new File(imagePath).toURI().toString());
             image.setImage(selectedImage);
         }
     }
 
-
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
-
-
 
         //-------------------------Hover Side bar ---------------------------------
         FadeTransition ft = new FadeTransition(Duration.millis(300), myBox);
@@ -80,42 +72,28 @@ public class UpdateEquipe implements Initializable {
         ft.setToValue(0.0);
         myBox.setOpacity(0.0);
 
-        // Set up mouse entered event
-
         myBox.setOnMouseEntered(new EventHandler<MouseEvent>() {
             @Override
             public void handle(MouseEvent mouseEvent) {
-                //System.out.println("Mouse Entered");
-                // myBox.setOpacity(1.0); // Make the VBox fully visible when the mouse enters
-                ft.setRate(-1); // Reverse the animation
-                ft.play(); // Play the animation
+                ft.setRate(-1);
+                ft.play();
             }
         });
-        // Set up mouse Exited event
+
         myBox.setOnMouseExited(new EventHandler<MouseEvent>() {
             @Override
             public void handle(MouseEvent mouseEvent) {
-                // System.out.println("Mouse Exited");
-                //myBox.setOpacity(0.0);
-                ft.setRate(3); // Play the animation in the forward direction
-                ft.play(); // Make the VBox invisible (but still interactable) when the mouse exits
+                ft.setRate(3);
+                ft.play();
             }
         });
 
-
-
-
-
-
-
-//-------------------------set data in my filed------------------------------------
+        //-------------------------set data in my filed------------------------------------
         Nomequipe.setText(selectedNom);
         LocalDate local = java.sql.Date.valueOf(String.valueOf(Selcdate)).toLocalDate();
         Dateequipe.setValue(local);
         Image selectedImage = new Image(new File(Selcimage).toURI().toString());
         image.setImage(selectedImage);
-
-
 
         //-------------upload my image--------------
         upload.setOnAction(new EventHandler<ActionEvent>() {
@@ -124,30 +102,45 @@ public class UpdateEquipe implements Initializable {
                 chooseImage();
             }
         });
+
         //------------------------update my team-------------
         update.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent actionEvent) {
+                String nom = Nomequipe.getText();
+                if (nom == null || nom.trim().isEmpty()) {
+                    Alert alert = new Alert(Alert.AlertType.WARNING);
+                    alert.setTitle("Validation Error");
+                    alert.setContentText("Team name cannot be empty.");
+                    alert.show();
+                    return;
+                }
+
+                LocalDate localDate = Dateequipe.getValue();
+                if (localDate == null) {
+                    Alert alert = new Alert(Alert.AlertType.WARNING);
+                    alert.setTitle("Validation Error");
+                    alert.setContentText("Please select a date.");
+                    alert.show();
+                    return;
+                }
 
                 Equipe equipe = new Equipe();
-                equipe.setNom(Nomequipe.getText());
-                LocalDate localDate = Dateequipe.getValue();
+                equipe.setNom(nom.trim());
                 java.sql.Date sqlDate = java.sql.Date.valueOf(localDate);
                 equipe.setDateCreation(sqlDate);
 
-                // Check if imagePath is null
                 if (imagePath != null) {
                     equipe.setImage(imagePath);
                 } else {
-                    equipe.setImage(Selcimage); // Set to current image if no new image is selected
+                    equipe.setImage(Selcimage);
                 }
 
                 try {
-
-                    serviceEquipe.modifier(Selcid,equipe);
+                    serviceEquipe.modifier(Selcid, equipe);
                     Alert alert = new Alert(Alert.AlertType.INFORMATION);
                     alert.setTitle("Success");
-                    alert.setContentText("Merci de modfier votre Equipe");
+                    alert.setContentText("Merci de modifier votre Equipe");
                     alert.show();
 
                     FXMLLoader loader = new FXMLLoader(getClass().getResource("/DisplayEquipe.fxml"));
@@ -157,8 +150,11 @@ public class UpdateEquipe implements Initializable {
                     stage.setTitle("Gestion Equipe");
                     stage.show();
 
-                } catch (SQLException | IOException e ) {
-                    throw new RuntimeException(e);
+                } catch (SQLException | IOException e) {
+                    Alert alert = new Alert(Alert.AlertType.ERROR);
+                    alert.setTitle("Error");
+                    alert.setContentText("Failed to update team: " + e.getMessage());
+                    alert.show();
                 }
             }
         });
@@ -168,12 +164,9 @@ public class UpdateEquipe implements Initializable {
             public void handle(ActionEvent actionEvent) {
                 Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
                 alert.setTitle("Alert");
-                alert.setContentText("are you sure! do you really want to delete this team");
-                Optional<ButtonType> result =alert.showAndWait();
-                if (result.get()==ButtonType.CANCEL){
-                    return;
-                } else if (result.get()==ButtonType.OK) {
-
+                alert.setContentText("Are you sure you want to delete this team?");
+                Optional<ButtonType> result = alert.showAndWait();
+                if (result.isPresent() && result.get() == ButtonType.OK) {
                     try {
                         serviceEquipe.supprimer(selectedId);
                         FXMLLoader loader = new FXMLLoader(getClass().getResource("/DisplayEquipe.fxml"));
@@ -182,15 +175,34 @@ public class UpdateEquipe implements Initializable {
                         stage.setScene(new Scene(root));
                         stage.setTitle("Gestion Equipe");
                         stage.show();
-                    } catch (IOException | SQLException e ) {
-                        throw new RuntimeException(e);
-                    }
-
-
+                    } catch (IOException | SQLException e) {
+                        Alert alert2 = new Alert(Alert.AlertType.ERROR);
+                        alert2.setTitle("Error");
+                        alert2.setContentText("Failed to delete team: " + e.getMessage());
+                        alert2.show();
                     }
                 }
+            }
         });
 
         //-----------------switch to home ---------------------
         home.setOnAction(new EventHandler<ActionEvent>() {
             @Override
+            public void handle(ActionEvent actionEvent) {
+                try {
+                    FXMLLoader loader = new FXMLLoader(getClass().getResource("/Home.fxml"));
+                    Parent root = loader.load();
+                    Stage stage = (Stage) home.getScene().getWindow();
+                    stage.setScene(new Scene(root));
+                    stage.setTitle("Home");
+                    stage.show();
+                } catch (IOException e) {
+                    Alert alert = new Alert(Alert.AlertType.ERROR);
+                    alert.setTitle("Error");
+                    alert.setContentText("Failed to load home: " + e.getMessage());
+                    alert.show();
+                }
+            }
+        });
+    }
+}
