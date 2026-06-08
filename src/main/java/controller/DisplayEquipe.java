@@ -17,6 +17,8 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.stage.Stage;
 import service.ServiceEquipe;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.URL;
@@ -27,24 +29,26 @@ import java.util.ResourceBundle;
 
 public class DisplayEquipe implements Initializable {
 
+    private static final Logger logger = LoggerFactory.getLogger(DisplayEquipe.class);
+
     @FXML
     ListView<Equipe> Mylist;
-
 
     public ObservableList<Equipe> gameList;
     ServiceEquipe serviceEquipe = ServiceEquipe.getInstance();
     List<Equipe> ListEquipe;
 
-     static String selectedNom;
-     static Date selectedDate;
-     static String selectedImage;
-     static int selectedId;
+    static String selectedNom;
+    static Date selectedDate;
+    static String selectedImage;
+    static int selectedId;
 
     {
         try {
             ListEquipe = serviceEquipe.recuperer();
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            logger.error("Failed to retrieve equipe list", e);
+            throw new RuntimeException("Failed to load equipe data", e);
         }
     }
 
@@ -98,20 +102,18 @@ public class DisplayEquipe implements Initializable {
             if (newValue != null) {
                 // Handle the selected item
 
-                 selectedNom = newValue.getNom();
-                 selectedDate =newValue.getDateCreation();
-                 selectedImage = newValue.getImage();
-                 selectedId = newValue.getId();
+                selectedNom = newValue.getNom();
+                selectedDate = newValue.getDateCreation();
+                selectedImage = newValue.getImage();
+                selectedId = newValue.getId();
 
                 // Now you have the selected data, you can use it as needed
-                System.out.println("Selected Nom: " + selectedNom);
-                System.out.println("Selected Date: " + selectedDate);
-                System.out.println("Selected Image: " + selectedImage);
-                System.out.println("Selected Id: " + selectedId);
+                logger.info("Selected Nom: {}", selectedNom);
+                logger.info("Selected Date: {}", selectedDate);
+                logger.info("Selected Image: {}", selectedImage);
+                logger.info("Selected Id: {}", selectedId);
 
                 //--------------change page----------
-
-
 
                 try {
                     FXMLLoader loader = new FXMLLoader(getClass().getResource("/UpdateEquipe .fxml"));
@@ -121,15 +123,10 @@ public class DisplayEquipe implements Initializable {
                     stage.setTitle("Gestion Equipe");
                     stage.show();
                 } catch (IOException e) {
-                    e.printStackTrace(); // Print the exception stack trace
-                    throw new RuntimeException(e);
+                    logger.error("Failed to load UpdateEquipe view", e);
+                    throw new RuntimeException("Failed to navigate to update equipe page", e);
                 }
-
-
-
             }
         });
-
-
     }
 }
