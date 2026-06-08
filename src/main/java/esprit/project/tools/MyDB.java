@@ -1,42 +1,36 @@
-package esprit.project.tools;
+package com.esprit.project.tools;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.sql.Statement;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class MyDB {
-    final String url = "jdbc:mysql://localhost:3306/esprit";
-    final String Username = "root";
-    final String Password = "";
+    private static final Logger LOGGER = Logger.getLogger(MyDB.class.getName());
+    private static final String URL = "jdbc:mysql://localhost:3306/esprit";
+    private static final String USERNAME = "root";
+    private static final String PASSWORD = "";
     private Connection connection;
-    private static MyDB insatnce;
+    private static MyDB instance;
 
     private MyDB() {
         try {
-            this.connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/database", "root", "");
-            System.out.println("Connection etablie avec Succ");
-        } catch (SQLException var2) {
-            System.out.println(var2.getMessage());
+            this.connection = DriverManager.getConnection(URL, USERNAME, PASSWORD);
+            LOGGER.info("Connection established successfully");
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, "Failed to establish database connection", e);
         }
-
     }
 
-    public static MyDB getInsatnce() {
-        if (insatnce == null) {
-            insatnce = new MyDB();
+    public static MyDB getInstance() {
+        if (instance == null) {
+            instance = new MyDB();
         }
-
-        return insatnce;
+        return instance;
     }
 
     public Connection getConnection() {
         return this.connection;
     }
-
-
-
-
-
-
 }
