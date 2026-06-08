@@ -1,8 +1,12 @@
 package entities;
 
 import java.time.LocalDate;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class AvisJoueur {
+    private static final Logger LOGGER = Logger.getLogger(AvisJoueur.class.getName());
+
     private int idAvis;
     private User user;
     private String commentaire;
@@ -62,6 +66,8 @@ public class AvisJoueur {
 
     @Override
     public String toString() {
-        return "AvisJoueur{" + "idAvis=" + idAvis + ", user=" + (user != null ? user.toString() : "null") + ", commentaire=" + commentaire + ", dateAvis=" + dateAvis + ", note=" + note + '}';
+        String result = "AvisJoueur{" + "idAvis=" + idAvis + ", user=" + (user != null ? user.toString() : "null") + ", commentaire=" + commentaire + ", dateAvis=" + dateAvis + ", note=" + note + '}';
+        LOGGER.log(Level.FINE, result);
+        return result;
     }
 }
