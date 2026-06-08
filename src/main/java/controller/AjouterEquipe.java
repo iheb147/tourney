@@ -5,7 +5,8 @@ function TodoApp() {
   const [text, setText] = useState("");
 
   const addTodo = () => {
-    setTodos([...todos, text]);
+    if (text.trim() === "") return;
+    setTodos([...todos, text.trim()]);
     setText("");
   };
 
@@ -19,18 +20,27 @@ function TodoApp() {
       <input
         value={text}
         onChange={(e) => setText(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") {
+            addTodo();
+          }
+        }}
       />
 
       <button onClick={addTodo}>Add</button>
 
-      {todos.map((todo, index) => (
-        <div key={index}>
-          {todo}
-          <button onClick={() => removeTodo(index)}>
-            Delete
-          </button>
-        </div>
-      ))}
+      {todos.length === 0 ? (
+        <p>No todos yet. Add one above!</p>
+      ) : (
+        todos.map((todo, index) => (
+          <div key={index}>
+            {todo}
+            <button onClick={() => removeTodo(index)}>
+              Delete
+            </button>
+          </div>
+        ))
+      )}
     </div>
   );
 }
