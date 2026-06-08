@@ -1,3 +1,6 @@
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
+
 @RestController
 public class CustomerController {
 
@@ -6,17 +9,16 @@ public class CustomerController {
 
     @GetMapping("/customers/{id}")
     public Customer getCustomer(@PathVariable Long id) {
-        Customer c = repo.findById(id).get();
+        Customer c = repo.findById(id).orElse(null);
         return c;
     }
 
     @PostMapping("/customers")
-    public String save(@RequestBody Customer customer) {
+    public Customer save(@RequestBody Customer customer) {
         try {
-            repo.save(customer);
-        } catch(Exception e) {
+            return repo.save(customer);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to save customer", e);
         }
-
-        return "saved";
     }
 }
