@@ -1,4 +1,3 @@
-```java
 package controller;
 
 import esprit.project.tools.MyDB;
@@ -28,8 +27,12 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.ResourceBundle;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class StaticAvis implements Initializable {
+
+    private static final Logger LOGGER = Logger.getLogger(StaticAvis.class.getName());
 
     @FXML
      private AnchorPane Mypane;
@@ -53,6 +56,7 @@ public class StaticAvis implements Initializable {
                 numberOfUsers = resultSet.getInt(1);
             }
         } catch (SQLException ex) {
+            LOGGER.log(Level.SEVERE, "Error fetching total user count", ex);
             throw new RuntimeException(ex);
         }
 
@@ -72,6 +76,7 @@ public class StaticAvis implements Initializable {
                 numberOfUsers = resultSet.getInt(1);
             }
         } catch (SQLException ex) {
+            LOGGER.log(Level.SEVERE, "Error fetching joueur count", ex);
             throw new RuntimeException(ex);
         }
 
@@ -90,6 +95,7 @@ public class StaticAvis implements Initializable {
                 numberOfUsers = resultSet.getInt(1);
             }
         } catch (SQLException ex) {
+            LOGGER.log(Level.SEVERE, "Error fetching equipe count", ex);
             throw new RuntimeException(ex);
         }
 
@@ -122,6 +128,7 @@ public class StaticAvis implements Initializable {
                 barChartData.add(series);
             }
         } catch (SQLException ex) {
+            LOGGER.log(Level.SEVERE, "Error fetching bar chart data", ex);
             throw new RuntimeException(ex);
         }
 
@@ -148,6 +155,7 @@ public class StaticAvis implements Initializable {
                 pieChartData.add(data);
             }
         } catch (SQLException ex) {
+            LOGGER.log(Level.SEVERE, "Error fetching pie chart data", ex);
             throw new RuntimeException(ex);
         }
 
@@ -188,4 +196,16 @@ public class StaticAvis implements Initializable {
 
         NbrUser.setText(String.valueOf(fetchData()));
         NbrUser2.setText(String.valueOf(fetchDataJoueur()));
-        NbrUser1.setText(String.valueOf(fetchData
+        NbrUser1.setText(String.valueOf(fetchDataEquipe()));
+    }
+
+    private void navigateToAvisTable() {
+        try {
+            Parent root = FXMLLoader.load(getClass().getResource("/path/to/avisTable.fxml"));
+            Stage stage = (Stage) Mypane.getScene().getWindow();
+            stage.setScene(new Scene(root));
+        } catch (IOException e) {
+            LOGGER.log(Level.SEVERE, "Error navigating to avis table", e);
+        }
+    }
+}
