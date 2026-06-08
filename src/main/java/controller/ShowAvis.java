@@ -32,94 +32,78 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.ResourceBundle;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class ShowAvis implements Initializable {
 
+    private static final Logger LOGGER = Logger.getLogger(ShowAvis.class.getName());
+
     ServiceAvisJoueur serviceAvisJoueur = ServiceAvisJoueur.getInstance();
     public static ResultSet rs;
-    public  static Integer idSelct;
-    public  static Integer idAvisSelct;
+    public static Integer idSelct;
+    public static Integer idAvisSelct;
     public static String commSelect;
     public static float noteSelect;
     public static String dateSelec;
 
-
-
-
     @FXML
-    private VBox mainContainer; // Assuming you have a VBox in your FXML file
-
-  
+    private VBox mainContainer;
 
     @FXML
     private AnchorPane Pane;
+
     public void getGrid() {
-        // Call recuperer() to get the data
         List<AvisJoueur> avisList;
         try {
             avisList = serviceAvisJoueur.recuperer();
         } catch (SQLException e) {
-            e.printStackTrace();
-            return; // Handle the exception according to your needs
+            LOGGER.log(Level.SEVERE, "Error retrieving avis list", e);
+            return;
         }
 
-
-        // Add data to the VBox
         for (AvisJoueur avis : avisList) {
             TitledPane titledPane = new TitledPane();
             titledPane.setOnMouseClicked(new EventHandler<MouseEvent>() {
-
                 @Override
                 public void handle(MouseEvent mouseEvent) {
-
                     if (mouseEvent.getButton() == MouseButton.PRIMARY && mouseEvent.getClickCount() == 2) {
-
-                        // Retrieve the idAvis when the TitledPane is clicked
                         int clickedIdAvis = avis.getIdAvis();
-                        System.out.println("Clicked on TitledPane with idAvis: " + clickedIdAvis);
+                        LOGGER.log(Level.INFO, "Clicked on TitledPane with idAvis: {0}", clickedIdAvis);
 
-
-                        try {
-                            Connection connection1 = MyDB.getInsatnce().getConnection();
-                            PreparedStatement pre = connection1.prepareStatement("SELECT * FROM avisjoueur WHERE idAvis = ?");
+                        try (Connection connection1 = MyDB.getInsatnce().getConnection();
+                             PreparedStatement pre = connection1.prepareStatement("SELECT * FROM avisjoueur WHERE idAvis = ?")) {
                             pre.setInt(1, clickedIdAvis);
-                            rs = pre.executeQuery();
-                            while (rs.next()) {
-                                idAvisSelct = Integer.valueOf(rs.getString("idAvis"));
-                                System.out.println(idAvisSelct);
-                                idSelct = Integer.valueOf(rs.getString("idJoueur"));
-                                System.out.println(idSelct);
-                                commSelect = rs.getString("commentaire");
-                                System.out.println(commSelect);
-                                noteSelect = Float.parseFloat(rs.getString("note"));
-                                System.out.println(noteSelect);
-                                dateSelec = rs.getString("dateAvis");
-                                System.out.println(dateSelec);
+                            try (ResultSet resultSet = pre.executeQuery()) {
+                                if (resultSet.next()) {
+                                    idAvisSelct = resultSet.getInt("idAvis");
+                                    LOGGER.log(Level.INFO, "idAvisSelct: {0}", idAvisSelct);
+                                    idSelct = resultSet.getInt("idJoueur");
+                                    LOGGER.log(Level.INFO, "idSelct: {0}", idSelct);
+                                    commSelect = resultSet.getString("commentaire");
+                                    LOGGER.log(Level.INFO, "commSelect: {0}", commSelect);
+                                    noteSelect = resultSet.getFloat("note");
+                                    LOGGER.log(Level.INFO, "noteSelect: {0}", noteSelect);
+                                    dateSelec = resultSet.getString("dateAvis");
+                                    LOGGER.log(Level.INFO, "dateSelec: {0}", dateSelec);
 
-
-                                FXMLLoader loader = new FXMLLoader(getClass().getResource("/UpdateAvis.fxml"));
-                                Parent root = loader.load();
-                                Stage stage = (Stage) ((Node) mouseEvent.getSource()).getScene().getWindow();
-                                //stage.setScene(new Scene(root, 900, 900));
-                                stage.setScene(new Scene(root));
-                                stage.setTitle("Gestion Avis");
-                                stage.show();
-
-
+                                    FXMLLoader loader = new FXMLLoader(getClass().getResource("/UpdateAvis.fxml"));
+                                    Parent root = loader.load();
+                                    Stage stage = (Stage) ((Node) mouseEvent.getSource()).getScene().getWindow();
+                                    stage.setScene(new Scene(root));
+                                    stage.setTitle("Gestion Avis");
+                                    stage.show();
+                                }
                             }
                         } catch (SQLException e) {
-                            e.printStackTrace();
+                            LOGGER.log(Level.SEVERE, "Database error while fetching avis details", e);
                         } catch (IOException e) {
-                            e.printStackTrace();
+                            LOGGER.log(Level.SEVERE, "Error loading UpdateAvis.fxml", e);
                         }
                     }
                 }
-                });
+            });
 
-
-
-
-           //------------------------titledpane & gridPane -----------------------
             String css = "-fx-font-size: 16px; -fx-font-family: 'Helvetica Neue'; -fx-text-fill: #333333; -fx-background-color: #FFFFFF; -fx-padding: 10px; -fx-border-radius: 5px; -fx-background-radius: 5px; ";
             titledPane.setText("Avis " + avis.getIdAvis());
             titledPane.setStyle(css);
@@ -131,10 +115,9 @@ public class ShowAvis implements Initializable {
             labelCommentaire.setStyle(css);
             gridPane.add(labelCommentaire, 0, 1);
 
-           // Use Rating control for the "Note" field
             Rating rating = new Rating();
             rating.setRating(avis.getNote());
-            rating.setDisable(true); // Make it read-only
+            rating.setDisable(true);
             rating.setPrefSize(50, 25);
             gridPane.add(new Label(""), 1, 2);
             gridPane.add(rating, 1, 2);
@@ -147,14 +130,11 @@ public class ShowAvis implements Initializable {
             labelDate.setStyle(css);
             gridPane.add(labelDate, 0, 4);
 
-
-
             titledPane.setContent(gridPane);
             mainContainer.getChildren().add(titledPane);
-
         }
     }
-    //--------------scroll function--------------------
+
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
         getGrid();
