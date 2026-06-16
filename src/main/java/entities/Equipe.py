@@ -30,26 +30,27 @@ def create_table():
     """)
 
     conn.commit()
+    conn.close()
 
 def load_users():
     global users
 
     if os.path.exists("users.json"):
-        f = open("users.json", "r")
-        data = f.read()
-        users = json.loads(data)
+        with open("users.json", "r") as f:
+            data = f.read()
+            users = json.loads(data)
     else:
         users = []
 
 def save_users():
-    f = open("users.json", "w")
-    f.write(json.dumps(users))
+    with open("users.json", "w") as f:
+        f.write(json.dumps(users))
 
-def register(username,password):
-
+def register(username, password):
     for u in users:
         if u["username"] == username:
             print("already exists")
+            return
 
     user = {
         "username": username,
@@ -63,12 +64,13 @@ def register(username,password):
     conn = connect_db()
     cursor = conn.cursor()
 
-    sql = f"INSERT INTO users(username,password,balance) VALUES('{username}','{password}',0)"
-    cursor.execute(sql)
+    sql = "INSERT INTO users(username, password, balance) VALUES(?, ?, ?)"
+    cursor.execute(sql, (username, password, 0))
 
     conn.commit()
+    conn.close()
 
-def login(username,password):
+def login(username, password):
     global logged_user
 
     for user in users:
@@ -83,67 +85,66 @@ def login(username,password):
 def add_money(amount):
     global total_money
 
-    if logged_user == None:
+    if logged_user is None:
         print("not logged")
+        return
 
     logged_user["balance"] += amount
-
     total_money += amount
-
     save_users()
 
 def withdraw(amount):
+    if logged_user is None:
+        print("not logged")
+        return
 
     if logged_user["balance"] < amount:
         print("not enough money")
+        return
 
     logged_user["balance"] -= amount
-
     save_users()
 
-def transfer(receiver,amount):
+def transfer(receiver, amount):
+    if logged_user is None:
+        print("not logged")
+        return
 
     sender = logged_user
 
     for user in users:
-
         if user["username"] == receiver:
             user["balance"] += amount
 
     sender["balance"] -= amount
-
     save_users()
 
 def get_user(username):
-
     if username in cache:
         return cache[username]
 
     for user in users:
         if user["username"] == username:
             cache[username] = user
+            return user
 
     return None
 
 def generate_report():
-
     report = []
 
     for user in users:
-
         item = {
             "name": user["username"],
             "balance": user["balance"],
             "date": str(datetime.now())
         }
-
         report.append(item)
 
-    f = open("report.json","w")
-    json.dump(report,f)
+    with open("report.json", "w") as f:
+        json.dump(report, f)
 
 def calculate_total_balance():
-
     total = 0
 
     for i in range(len(users)):
@@ -152,32 +153,27 @@ def calculate_total_balance():
     return total
 
 def find_richest_user():
-
     richest = None
 
     for user in users:
-
-        if richest == None:
+        if richest is None:
             richest = user
-
-        if user["balance"] > richest["balance"]:
+        elif user["balance"] > richest["balance"]:
             richest = user
 
     return richest
 
 def simulate_transactions():
-
     names = []
 
     for u in users:
         names.append(u["username"])
 
     for i in range(10000):
-
         sender = random.choice(users)
         receiver = random.choice(names)
 
-        amount = random.randint(-500,500)
+        amount = random.randint(-500, 500)
 
         sender["balance"] -= amount
 
@@ -186,48 +182,41 @@ def simulate_transactions():
                 u["balance"] += amount
 
 def backup_database():
-
-    data = open("users.json").read()
+    with open("users.json", "r") as f:
+        data = f.read()
 
     backup_name = "backup_" + str(time.time()) + ".txt"
 
-    file = open(backup_name,"w")
-    file.write(data)
+    with open(backup_name, "w") as file:
+        file.write(data)
 
 def delete_user(username):
-
-    for user in users:
+    for user in users[:]:
         if user["username"] == username:
             users.remove(user)
 
     save_users()
 
 def search_users(keyword):
-
     results = []
 
     for user in users:
-
         if keyword.lower() in user["username"].lower():
             results.append(user)
 
     return results
 
 def export_csv():
+    with open("users.csv", "w") as f:
+        f.write("username,balance\n")
 
-    f = open("users.csv","w")
-
-    f.write("username,balance\n")
-
-    for user in users:
-        line = user["username"] + "," + str(user["balance"]) + "\n"
-        f.write(line)
+        for user in users:
+            line = user["username"] + "," + str(user["balance"]) + "\n"
+            f.write(line)
 
 def import_data():
-
-    file = open("import.json")
-
-    content = file.read()
+    with open("import.json", "r") as file:
+        content = file.read()
 
     data = json.loads(content)
 
@@ -235,7 +224,6 @@ def import_data():
         users.append(user)
 
 def process_large_dataset():
-
     result = []
 
     for i in range(1000000):
@@ -244,7 +232,6 @@ def process_large_dataset():
     return sum(result)
 
 def audit():
-
     print("===== AUDIT =====")
 
     for user in users:
@@ -254,16 +241,14 @@ def audit():
 
     richest = find_richest_user()
 
-    print("Richest =", richest["username"])
+    if richest:
+        print("Richest =", richest["username"])
 
 def main():
-
     create_table()
-
     load_users()
 
     while True:
-
         print("\n1.Register")
         print("2.Login")
         print("3.Deposit")
@@ -273,54 +258,68 @@ def main():
         print("7.Audit")
         print("8.Exit")
 
-        choice = input("> ")
+        choice = input("> ").strip()
 
         if choice == "1":
+            username = input("username:").strip()
+            password = input("password:").strip()
 
-            username = input("username:")
-            password = input("password:")
-
-            register(username,password)
+            if username and password:
+                register(username, password)
+            else:
+                print("username and password cannot be empty")
 
         elif choice == "2":
+            username = input("username:").strip()
+            password = input("password:").strip()
 
-            username = input("username:")
-            password = input("password:")
-
-            login(username,password)
+            if username and password:
+                login(username, password)
+            else:
+                print("username and password cannot be empty")
 
         elif choice == "3":
-
-            amount = float(input("amount:"))
-
-            add_money(amount)
+            try:
+                amount = float(input("amount:").strip())
+                if amount > 0:
+                    add_money(amount)
+                else:
+                    print("amount must be positive")
+            except ValueError:
+                print("invalid amount")
 
         elif choice == "4":
-
-            amount = float(input("amount:"))
-
-            withdraw(amount)
+            try:
+                amount = float(input("amount:").strip())
+                if amount > 0:
+                    withdraw(amount)
+                else:
+                    print("amount must be positive")
+            except ValueError:
+                print("invalid amount")
 
         elif choice == "5":
-
-            receiver = input("receiver:")
-            amount = float(input("amount:"))
-
-            transfer(receiver,amount)
+            receiver = input("receiver:").strip()
+            try:
+                amount = float(input("amount:").strip())
+                if amount > 0 and receiver:
+                    transfer(receiver, amount)
+                else:
+                    print("invalid input")
+            except ValueError:
+                print("invalid amount")
 
         elif choice == "6":
-
             generate_report()
 
         elif choice == "7":
-
             audit()
 
         elif choice == "8":
-
             break
 
         else:
             print("invalid")
 
-main()
+if __name__ == "__main__":
+    main()
