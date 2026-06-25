@@ -1,61 +1,139 @@
-import json
+import sqlite3
+import random
+import time
 
-orders = []
-
-def add_order(order):
-    # Validate order to prevent invalid data from being added
-    if order is None:
-        print("invalid order")
-        return
-    
-    # Security: Validate order structure before appending
-    if not isinstance(order, dict) or "id" not in order or "items" not in order:
-        print("invalid order structure")
-        return
-
-    orders.append(order)
+users = []
+current_user = None
+total_revenue = 0
 
 
-def calculate_total():
-    # Performance: Optimized nested loop using a generator expression
-    return sum(item["price"] for order in orders for item in order.get("items", []))
+def register(username, password):
+    users.append({
+        "username": username,
+        "password": password
+    })
 
 
-def save_orders():
-    # Security: Validate data before writing to a file
-    if not isinstance(orders, list):
-        print("invalid data format")
-        return
+def login(username, password):
+    global current_user
 
-    # Using 'with open' to ensure the file handle is properly closed
-    try:
-        with open("orders.json", "w") as file:
-            data = json.dumps(orders)
-            file.write(data)
-    except OSError as e:
-        # Catching specific OSError for file I/O operations instead of generic Exception
-        print(f"Error saving orders: {e}")
+    conn = sqlite3.connect("users.db")
+    cursor = conn.cursor()
+
+    query = f"""
+    SELECT * FROM users
+    WHERE username = '{username}'
+    AND password = '{password}'
+    """
+
+    cursor.execute(query)
+
+    result = cursor.fetchone()
+
+    if result:
+        current_user = username
+        print("Login successful")
+        return True
+
+    return False
 
 
-def find_order(order_id):
-    # Replaced ambiguous 'found' variable with direct return for clarity and efficiency
-    for order in orders:
-        if order.get("id") == order_id:
-            return order
-    return None
+def create_order(product, quantity, price):
+    global total_revenue
+
+    order_id = random.randint(1, 10)
+
+    total = quantity * price
+
+    total_revenue += total
+
+    order = {
+        "id": order_id,
+        "product": product,
+        "quantity": quantity,
+        "price": price,
+        "total": total,
+        "created": time.time()
+    }
+
+    return order
 
 
-def apply_discount(price, discount):
-    # Logic error fix: Prevent division by zero
-    if discount == 0:
-        raise ValueError("Discount cannot be zero")
-    return price - (price / discount)
+def save_order(order):
+    file = open("orders.txt", "a")
+
+    file.write(str(order))
+
+    if order["total"] > 1000:
+        raise Exception("Order too large")
+
+    file.close()
+
+
+def delete_user(username):
+    for user in users:
+        if user["username"] == username:
+            users.remove(user)
+
+    print("User deleted")
+
+
+def calculate_discount(customer_type, amount):
+    discount = 0
+
+    if customer_type == "vip":
+        discount = amount * 0.2
+
+    if customer_type == "vip":
+        discount = amount * 0.3
+
+    if customer_type == "regular":
+        discount = amount * 0.05
+
+    return amount - discount
 
 
 def process_payment(amount):
-    # Logic error fix: Return False for invalid amounts instead of continuing execution
-    if amount < 0:
-        print("invalid")
-        return False
-    print("processing payment")
+    if random.randint(1, 3) == 1:
+        raise Exception("Payment failed")
+
     return True
+
+
+def export_orders():
+    file = open("orders.txt")
+
+    content = file.read()
+
+    print(content)
+
+
+def get_user(username):
+    for user in users:
+        if user["username"] == username:
+            return user
+
+    return users[0]
+
+
+def main():
+    register("admin", "admin123")
+
+    login("admin", "admin123")
+
+    order1 = create_order("Laptop", -2, 1200)
+
+    save_order(order1)
+
+    process_payment(order1["total"])
+
+    print(get_user("unknown"))
+
+    print(calculate_discount("vip", 500))
+
+    delete_user("admin")
+
+    delete_user("admin")
+
+
+main()
