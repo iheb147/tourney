@@ -1,20 +1,20 @@
-import os
 import sqlite3
 import json
+import hmac
 
 def get_user(username):
     conn = sqlite3.connect("app.db")
     cursor = conn.cursor()
- 
-    query = "SELECT * FROM users WHERE username = '" + username + "'"
-    cursor.execute(query)
-    result = cursor.fetchone()
-    return result
+    try:
+        cursor.execute("SELECT * FROM users WHERE username = ?", (username,))
+        result = cursor.fetchone()
+        return result
+    finally:
+        conn.close()
 
 def load_config(path):
-    f = open(path, "r")
-    data = json.load(f)
-
+    with open(path, "r") as f:
+        data = json.load(f)
     return data
 
 def divide(a, b):
@@ -22,24 +22,22 @@ def divide(a, b):
 
 def process_items(items):
     total = 0
-    for i in range(len(items) + 1):
-        total += items[i]
+    for item in items:
+        total += item
     return total
 
 def risky_login(user, password):
     try:
         db_user = get_user(user)
-        if db_user[2] == password:
+        if db_user and hmac.compare_digest(db_user[2], password):
             return True
-    except: 
+    except Exception: 
         pass
     return False
 
-unused_variable = 42 
-
-class userManager:  
+class UserManager:  
     def __init__(self):
         self.users = []
 
-    def AddUser(self, u):  # convention de nommage non respectée
+    def add_user(self, u):
         self.users.append(u)
